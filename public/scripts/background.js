@@ -14,7 +14,7 @@ const defineMessageListener = () => {
         try {
             switch (msg.event) {
                 case BLOCKED_ON_PAGE_KEY:
-                    await handleNumBlockedPageUpdate(msg.numElementsBlocked, sender.tab.id)
+                    await handleNumBlockedPageUpdate(msg, sender.tab.id)
                     response('handled by background script');
 
                     break;
@@ -28,15 +28,20 @@ const defineMessageListener = () => {
     });
   }
   
-const handleNumBlockedPageUpdate = async (numElementsBlocked, tabID) => {
+const handleNumBlockedPageUpdate = async (msg, tabID) => {
     const blockedOnPageDBKey = getBlockedPageDBKey(tabID);
 
-    const { [blockedOnPageDBKey]: prevNumBlocked } = await chrome.storage.local.get([blockedOnPageDBKey]);
+    const { [blockedOnPageDBKey]: prevValue } = await chrome.storage.local.get([blockedOnPageDBKey]);
 
-    console.log(prevNumBlocked);
+    const prevNumBlocked = prevValue?.numBlocked;
+
+    const { numBlocked, hostname } = msg;
 
     await chrome.storage.local.set({
-        [blockedOnPageDBKey]: numElementsBlocked + (prevNumBlocked ?? 0)
+        [blockedOnPageDBKey]: {
+            hostname,
+            numBlocked: numBlocked + (prevNumBlocked ?? 0)
+        }
     });
 }
 
@@ -48,11 +53,42 @@ const defineOnTabCloseListener = () => {
     })
 }
 
+const handlePageNavigation = async (details) => {
+    const ifNavigationMainFrame = details.frameId === 0;
+
+    if (ifNavigationMainFrame) {
+        handleHostnameSwitch(details)
+    }
+}
+
+const handleHostnameSwitch = async (details) => {
+    const { hostname: newHostname } = new URL(details.url);
+
+    const blockedOnPageDBKey = getBlockedPageDBKey(details.tabId);
+    const { [blockedOnPageDBKey]: { hostname }} = await chrome.storage.local.get([blockedOnPageDBKey]);
+
+    if (newHostname !== hostname) {
+        await chrome.storage.local.set({
+            [blockedOnPageDBKey]: {
+                hostname: newHostname,
+                numBlocked: 0
+            }
+        })
+    }
+}
+
+const defineNavigationHandlers = () => {
+    chrome.webNavigation.onCompleted.addListener(handlePageNavigation); 
+    chrome.webNavigation.onHistoryStateUpdated.addListener(handlePageNavigation);
+    chrome.webNavigation.onReferenceFragmentUpdated.addListener(handlePageNavigation);
+}
+
 const getBlockedPageDBKey = (tabID) => `${BLOCKED_ON_PAGE_KEY}:${tabID}`;
 
 const main = async () => {
   try {
     defineMessageListener();
+    defineNavigationHandlers();
     defineOnTabCloseListener();
 
     await initBlocking();

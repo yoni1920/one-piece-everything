@@ -94,7 +94,8 @@ const sendInjectCount = async (numElementsBlocked) => {
   try {
     const payload = {
       event: BLOCKED_ON_PAGE_KEY,
-      numElementsBlocked,
+      numBlocked: numElementsBlocked,
+      hostname: location.hostname
     };
 
     const response = await chrome.runtime.sendMessage(payload);

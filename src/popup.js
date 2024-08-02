@@ -5,8 +5,6 @@ const BLOCKED_ON_PAGE_KEY = 'blockedOnPage';
 const defineCurrentTab = async () => {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   const { url, id } = tabs[0];
-  
-  console.log('tabid', id);
 
   const { hostname } = new URL(url);
 
@@ -62,15 +60,18 @@ const defineDBChangeListener = (tabID) => {
 
 const handleBlockedPageUpdate = (blockedOnPageKey, changes) => {
   const { [blockedOnPageKey]: { newValue } } = changes;
+  console.log('changes', changes);
 
-  updateNumBlockedPageElement(newValue)
+  const updatedNumBlocked = newValue.numBlocked;
+
+  updateNumBlockedPageElement(updatedNumBlocked)
 }
 
 const getInitialBlockedOnPage = async (tabID) => {
   const blockedOnPageDBKey = getBlockedPageDBKey(tabID);
   const { [blockedOnPageDBKey]: initDBValue } = await chrome.storage.local.get([blockedOnPageDBKey]);
 
-  const numBlockedOnPage = initDBValue ?? 0;
+  const numBlockedOnPage = initDBValue?.numBlocked ?? 0;
 
   updateNumBlockedPageElement(numBlockedOnPage);
 }

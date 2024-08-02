@@ -22,7 +22,7 @@
       "128": "images/icons/luffy-128.png"
     }
   },
-  "permissions": ["activeTab", "scripting", "tabs", "storage"],
+  "permissions": ["scripting", "tabs", "storage", "webNavigation"],
   "content_scripts": [
     {
       "js": ["/scripts/content.js"],
