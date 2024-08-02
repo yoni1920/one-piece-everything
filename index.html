@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>LuffyBlocker</title>
+    </head>
+
+    <body>
+        <div class="flex items-center space-x-2">
+            <div class="avatar pl-4">
+                <div class="luffy-logo rounded-full">
+                    <img src="../images/icons/luffy-48.png" />
+                </div>
+            </div>
+            <div class="luffy-text pr-4 text-xl font-bold">LuffyBlocker</div>
+        </div>
+
+        <div class="luffy-text flex flex-col items-center">
+            <!-- <div id="num-blocked" class="luffy-text font-bold">
+                <h1 class="text-xl">Luffy Blocked</h1>
+            </div> -->
+            <div class="flex">
+                <div class="text-lg font-bold" id="num-blocked-title">Luffy Blocked:&nbsp;</div>
+                <div class="text-lg font-bold" id="num-blocked">0</div>
+            </div>
+    
+
+            <!-- <div id="is-enabled">
+                <h1 class="text-xl">Enabled</h1>
+            </div> -->
+
+            <input
+                id="enable-blocking"
+                type="checkbox"
+                checked
+                class="toggle toggle-accent toggle-lg"
+            />
+
+            <div id="current-url" class="text-lg">url</div>
+        </div>
+
+        <script type="module" src="./src/popup.js"></script>
+    </body>
+</html>
